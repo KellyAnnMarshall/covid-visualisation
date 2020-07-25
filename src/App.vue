@@ -6,9 +6,9 @@
           <label for="country">Country:</label>
           <select v-model="selectedCountry" class="form-control">
             <option disabled value>Please select a country</option>
-            <option v-for="(country, i) in allCountries" :key="i">{{
-              country
-            }}</option>
+            <option v-for="(country, i) in allCountries" :key="i">
+              {{ country }}
+            </option>
           </select>
         </div>
         <div class="form-group col col-md-3">
@@ -44,7 +44,7 @@
             aspectRatio="1.5"
             chartType="line"
             chartLabel="Daily Deaths"
-            borderColor="rgba(54, 162, 235, 1)"
+            bordercolor="rgba(54, 162, 235, 1)"
             backgroundColor="rgba(54, 162, 235, 0.2)"
           />
         </div>
@@ -55,7 +55,7 @@
             aspectRatio="1.5"
             chartType="line"
             chartLabel="Daily Cases"
-            borderColor="rgba(255, 99, 132, 1)"
+            bordercolor="rgba(255, 99, 132, 1)"
             backgroundColor="rgba(255, 99, 132, 0.2)"
           />
         </div>
@@ -66,7 +66,7 @@
             aspectRatio="1.5"
             chartType="line"
             chartLabel="Cumulative Deaths"
-            borderColor="rgba(54, 162, 235, 1)"
+            bordercolor="rgba(54, 162, 235, 1)"
             backgroundColor="rgba(54, 162, 235, 0.2)"
           />
         </div>
@@ -77,7 +77,7 @@
             aspectRatio="1.5"
             chartType="line"
             chartLabel="Cumulative Cases"
-            borderColor="rgba(255, 99, 132, 1)"
+            bordercolor="rgba(255, 99, 132, 1)"
             backgroundColor="rgba(255, 99, 132, 0.2)"
           />
         </div>
@@ -89,7 +89,7 @@
       aspectRatio="1.5"
       chartType="bar"
       :chartLabel="topTwentyLabel"
-      borderColor="rgba(54, 162, 235, 1)"
+      bordercolor="rgba(54, 162, 235, 1)"
       backgroundColor="rgba(54, 162, 235, 0.2)"
     />
     <!-- <Pivot ref="pivot" toolbar v-bind:report="'report.json'" /> -->
@@ -283,22 +283,29 @@ export default {
           this.covidData = response.data;
         })
         .then(this.getCountries)
-        .then(this.getPivotData)
-        .then(this.formatPivotResults);
+        .then(this.getTopTwenty);
     },
-    getPivotData() {
-      let url = "pivot.json";
-      return axios.get(url).then(response => {
-        this.pivotData = response.data;
-      });
-    },
-    formatPivotResults() {
-      this.pivotData.map(row => {
-        return this.topTwentyCountries.push(row.country);
-      });
-      this.pivotData.map(row => {
-        let deaths = row.deaths.replace(/\D/g, "");
-        return this.topTwentyDeaths.push(deaths);
+    getTopTwenty() {
+      let yesterday = moment().subtract(1, "days");
+      let yesterdayFormatted = yesterday.format("DD/MM/YYYY");
+      let topTwentyData = this.covidData.records
+        .filter(record => {
+          return record.dateRep == yesterdayFormatted;
+        })
+        .sort((a, b) => {
+          return b.deaths - a.deaths;
+        })
+        .slice(0, 20);
+      topTwentyData.map(row => {
+        let name = row.countriesAndTerritories.replace(/_/g, " ");
+        if (name == "United States of America") {
+          name = "USA";
+        }
+        if (name == "United Kingdom") {
+          name = "UK";
+        }
+        this.topTwentyCountries.push(name);
+        this.topTwentyDeaths.push(row.deaths);
       });
     },
     initDefaultStartEndDates() {
@@ -348,8 +355,9 @@ export default {
       this.selectedStartDate = date;
     },
     setTopTwentyLabel() {
-      let month = moment().format("MMMM");
-      this.topTwentyLabel = month + " Total Deaths - Top 20";
+      let yesterday = moment().subtract(1, "days");
+      this.topTwentyLabel =
+        yesterday.format("DD MMMM YYYY") + " Total Deaths - Top 20";
     }
   },
   mounted() {
