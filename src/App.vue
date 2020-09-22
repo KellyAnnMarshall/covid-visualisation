@@ -84,11 +84,11 @@
       </div>
     </div>
     <chart
-      :chartData="topTwentyDeaths"
-      :chartAxisLabels="topTwentyCountries"
+      :chartData="topTenDeaths"
+      :chartAxisLabels="topTenDeathsCountries"
       aspectRatio="1.5"
       chartType="bar"
-      :chartLabel="topTwentyLabel"
+      :chartLabel="topTenDeathsLabel"
       bordercolor="rgba(54, 162, 235, 1)"
       backgroundColor="rgba(54, 162, 235, 0.2)"
     />
@@ -119,9 +119,9 @@ export default {
       selectedCountry: "",
       selectedStartDate: "",
       selectedEndDate: "",
-      topTwentyCountries: [],
-      topTwentyDeaths: [],
-      topTwentyLabel: "",
+      topTenDeathsCountries: [],
+      topTenDeaths: [],
+      topTenDeathsLabel: "",
       initChart: false
     };
   },
@@ -288,15 +288,15 @@ export default {
     getTopTwenty() {
       let yesterday = moment().subtract(1, "days");
       let yesterdayFormatted = yesterday.format("DD/MM/YYYY");
-      let topTwentyData = this.covidData.records
+      let topTenData = this.covidData.records
         .filter(record => {
           return record.dateRep == yesterdayFormatted;
         })
         .sort((a, b) => {
           return b.deaths - a.deaths;
         })
-        .slice(0, 20);
-      topTwentyData.map(row => {
+        .slice(0, 10);
+      topTenData.map(row => {
         let name = row.countriesAndTerritories.replace(/_/g, " ");
         if (name == "United States of America") {
           name = "USA";
@@ -304,8 +304,8 @@ export default {
         if (name == "United Kingdom") {
           name = "UK";
         }
-        this.topTwentyCountries.push(name);
-        this.topTwentyDeaths.push(row.deaths);
+        this.topTenDeathsCountries.push(name);
+        this.topTenDeaths.push(row.deaths);
       });
     },
     initDefaultStartEndDates() {
@@ -354,16 +354,16 @@ export default {
     setSelectedStartDate(date) {
       this.selectedStartDate = date;
     },
-    setTopTwentyLabel() {
+    settopTenDeathsLabel() {
       let yesterday = moment().subtract(1, "days");
-      this.topTwentyLabel =
-        yesterday.format("DD MMMM YYYY") + " Total Deaths - Top 20";
+      this.topTenDeathsLabel =
+        yesterday.format("DD MMMM YYYY") + " Total Deaths - Top 10";
     }
   },
   mounted() {
     this.getCalendarDates();
     this.getData();
-    this.setTopTwentyLabel();
+    this.settopTenDeathsLabel();
   },
   destroyed() {}
 };
