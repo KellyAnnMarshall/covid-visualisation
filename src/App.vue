@@ -44,7 +44,7 @@
             aspectRatio="1.5"
             chartType="line"
             chartLabel="Daily Deaths"
-            bordercolor="rgba(54, 162, 235, 1)"
+            borderColor="rgba(54, 162, 235, 1)"
             backgroundColor="rgba(54, 162, 235, 0.2)"
           />
         </div>
@@ -55,7 +55,7 @@
             aspectRatio="1.5"
             chartType="line"
             chartLabel="Daily Cases"
-            bordercolor="rgba(255, 99, 132, 1)"
+            borderColor="rgba(255, 99, 132, 1)"
             backgroundColor="rgba(255, 99, 132, 0.2)"
           />
         </div>
@@ -66,7 +66,7 @@
             aspectRatio="1.5"
             chartType="line"
             chartLabel="Cumulative Deaths"
-            bordercolor="rgba(54, 162, 235, 1)"
+            borderColor="rgba(54, 162, 235, 1)"
             backgroundColor="rgba(54, 162, 235, 0.2)"
           />
         </div>
@@ -77,21 +77,37 @@
             aspectRatio="1.5"
             chartType="line"
             chartLabel="Cumulative Cases"
-            bordercolor="rgba(255, 99, 132, 1)"
+            borderColor="rgba(255, 99, 132, 1)"
             backgroundColor="rgba(255, 99, 132, 0.2)"
           />
         </div>
       </div>
     </div>
-    <chart
-      :chartData="topTenDeaths"
-      :chartAxisLabels="topTenDeathsCountries"
-      aspectRatio="1.5"
-      chartType="bar"
-      :chartLabel="topTenDeathsLabel"
-      bordercolor="rgba(54, 162, 235, 1)"
-      backgroundColor="rgba(54, 162, 235, 0.2)"
-    />
+    <div class="row">
+      <div class="col-12 col-md-6 mb-5">
+        <chart
+          :chartData="topTenDeaths"
+          :chartAxisLabels="topTenDeathsCountries"
+          aspectRatio="1.5"
+          chartType="bar"
+          :chartLabel="topTenDeathsLabel"
+          borderColor="rgba(54, 162, 235, 1)"
+          backgroundColor="rgba(54, 162, 235, 0.2)"
+        />
+      </div>
+      <div class="col-12 col-md-6 mb-5">
+        <chart
+          :chartData="topTenCases"
+          :chartAxisLabels="topTenCasesCountries"
+          aspectRatio="1.5"
+          chartType="bar"
+          :chartLabel="topTenCasesLabel"
+          borderColor="rgba(255, 99, 132, 1)"
+          backgroundColor="rgba(255, 99, 132, 0.2)"
+        />
+      </div>
+    </div>
+
     <!-- <Pivot ref="pivot" toolbar v-bind:report="'report.json'" /> -->
   </div>
 </template>
@@ -99,7 +115,6 @@
 <script>
 import moment from "moment";
 import axios from "axios";
-
 import Datepicker from "./components/Datepicker.vue";
 import Chart from "./components/Chart.vue";
 
@@ -119,6 +134,9 @@ export default {
       selectedCountry: "",
       selectedStartDate: "",
       selectedEndDate: "",
+      topTenCasesCountries: [],
+      topTenCases: [],
+      topTenCasesLabel: "",
       topTenDeathsCountries: [],
       topTenDeaths: [],
       topTenDeathsLabel: "",
@@ -283,12 +301,36 @@ export default {
           this.covidData = response.data;
         })
         .then(this.getCountries)
-        .then(this.getTopTwenty);
+        .then(this.getTopTwentyCases)
+        .then(this.getTopTwentyDeaths);
     },
-    getTopTwenty() {
+    getTopTwentyCases() {
       let yesterday = moment().subtract(1, "days");
       let yesterdayFormatted = yesterday.format("DD/MM/YYYY");
-      let topTenData = this.covidData.records
+      let topTenCaseData = this.covidData.records
+        .filter(record => {
+          return record.dateRep == yesterdayFormatted;
+        })
+        .sort((a, b) => {
+          return b.cases - a.cases;
+        })
+        .slice(0, 10);
+      topTenCaseData.map(row => {
+        let name = row.countriesAndTerritories.replace(/_/g, " ");
+        if (name == "United States of America") {
+          name = "USA";
+        }
+        if (name == "United Kingdom") {
+          name = "UK";
+        }
+        this.topTenCasesCountries.push(name);
+        this.topTenCases.push(row.cases);
+      });
+    },
+    getTopTwentyDeaths() {
+      let yesterday = moment().subtract(1, "days");
+      let yesterdayFormatted = yesterday.format("DD/MM/YYYY");
+      let topTenDeathsData = this.covidData.records
         .filter(record => {
           return record.dateRep == yesterdayFormatted;
         })
@@ -296,7 +338,7 @@ export default {
           return b.deaths - a.deaths;
         })
         .slice(0, 10);
-      topTenData.map(row => {
+      topTenDeathsData.map(row => {
         let name = row.countriesAndTerritories.replace(/_/g, " ");
         if (name == "United States of America") {
           name = "USA";
@@ -354,7 +396,12 @@ export default {
     setSelectedStartDate(date) {
       this.selectedStartDate = date;
     },
-    settopTenDeathsLabel() {
+    setTopTenCasesLabel() {
+      let yesterday = moment().subtract(1, "days");
+      this.topTenCasesLabel =
+        yesterday.format("DD MMMM YYYY") + " Total Cases - Top 10";
+    },
+    setTopTenDeathsLabel() {
       let yesterday = moment().subtract(1, "days");
       this.topTenDeathsLabel =
         yesterday.format("DD MMMM YYYY") + " Total Deaths - Top 10";
@@ -363,7 +410,8 @@ export default {
   mounted() {
     this.getCalendarDates();
     this.getData();
-    this.settopTenDeathsLabel();
+    this.setTopTenDeathsLabel();
+    this.setTopTenCasesLabel();
   },
   destroyed() {}
 };
