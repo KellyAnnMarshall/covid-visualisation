@@ -84,13 +84,18 @@
       </div>
     </div>
     <div class="row">
+      <div class="col-12 text-center">
+        <h2 class="h4">
+          {{ globalStatsLabel }}
+        </h2>
+      </div>
       <div class="col-12 col-md-6 mb-5">
         <chart
           :chartData="topTenDeaths"
           :chartAxisLabels="topTenDeathsCountries"
           aspectRatio="1.5"
           chartType="bar"
-          :chartLabel="topTenDeathsLabel"
+          chartLabel="Deaths"
           borderColor="rgba(54, 162, 235, 1)"
           backgroundColor="rgba(54, 162, 235, 0.2)"
         />
@@ -101,7 +106,7 @@
           :chartAxisLabels="topTenCasesCountries"
           aspectRatio="1.5"
           chartType="bar"
-          :chartLabel="topTenCasesLabel"
+          chartLabel="Cases"
           borderColor="rgba(255, 99, 132, 1)"
           backgroundColor="rgba(255, 99, 132, 0.2)"
         />
@@ -136,10 +141,9 @@ export default {
       selectedEndDate: "",
       topTenCasesCountries: [],
       topTenCases: [],
-      topTenCasesLabel: "",
+      globalStatsLabel: "",
       topTenDeathsCountries: [],
       topTenDeaths: [],
-      topTenDeathsLabel: "",
       initChart: false
     };
   },
@@ -396,22 +400,16 @@ export default {
     setSelectedStartDate(date) {
       this.selectedStartDate = date;
     },
-    setTopTenCasesLabel() {
+    setGlobalStatsLabel() {
       let yesterday = moment().subtract(1, "days");
-      this.topTenCasesLabel =
-        yesterday.format("DD MMMM YYYY") + " Total Cases - Top 10";
-    },
-    setTopTenDeathsLabel() {
-      let yesterday = moment().subtract(1, "days");
-      this.topTenDeathsLabel =
-        yesterday.format("DD MMMM YYYY") + " Total Deaths - Top 10";
+      this.globalStatsLabel =
+        yesterday.format("DD MMM YYYY") + " - Top 10";
     }
   },
   mounted() {
     this.getCalendarDates();
     this.getData();
-    this.setTopTenDeathsLabel();
-    this.setTopTenCasesLabel();
+    this.setGlobalStatsLabel();
   },
   destroyed() {}
 };
