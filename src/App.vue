@@ -43,7 +43,7 @@
             :chartAxisLabels="dateLabels"
             aspectRatio="1.5"
             chartType="line"
-            chartLabel="Daily Deaths"
+            chartLabel="Weekly Deaths"
             borderColor="rgba(54, 162, 235, 1)"
             backgroundColor="rgba(54, 162, 235, 0.2)"
           />
@@ -54,7 +54,7 @@
             :chartAxisLabels="dateLabels"
             aspectRatio="1.5"
             chartType="line"
-            chartLabel="Daily Cases"
+            chartLabel="Weekly Cases"
             borderColor="rgba(255, 99, 132, 1)"
             backgroundColor="rgba(255, 99, 132, 0.2)"
           />
@@ -83,37 +83,6 @@
         </div>
       </div>
     </div>
-    <div class="row">
-      <div class="col-12 text-center">
-        <h2 class="h4">
-          {{ globalStatsLabel }}
-        </h2>
-      </div>
-      <div class="col-12 col-md-6 mb-5">
-        <chart
-          :chartData="topTenDeaths"
-          :chartAxisLabels="topTenDeathsCountries"
-          aspectRatio="1.5"
-          chartType="bar"
-          chartLabel="Deaths"
-          borderColor="rgba(54, 162, 235, 1)"
-          backgroundColor="rgba(54, 162, 235, 0.2)"
-        />
-      </div>
-      <div class="col-12 col-md-6 mb-5">
-        <chart
-          :chartData="topTenCases"
-          :chartAxisLabels="topTenCasesCountries"
-          aspectRatio="1.5"
-          chartType="bar"
-          chartLabel="Cases"
-          borderColor="rgba(255, 99, 132, 1)"
-          backgroundColor="rgba(255, 99, 132, 0.2)"
-        />
-      </div>
-    </div>
-
-    <!-- <Pivot ref="pivot" toolbar v-bind:report="'report.json'" /> -->
   </div>
 </template>
 
@@ -328,7 +297,7 @@ export default {
           name = "UK";
         }
         this.topTenCasesCountries.push(name);
-        this.topTenCases.push(row.cases);
+        this.topTenCases.push(row.cases_weekly);
       });
     },
     getTopTwentyDeaths() {
@@ -339,7 +308,7 @@ export default {
           return record.dateRep == yesterdayFormatted;
         })
         .sort((a, b) => {
-          return b.deaths - a.deaths;
+          return b.deaths_weekly - a.deaths_weekly;
         })
         .slice(0, 10);
       topTenDeathsData.map(row => {
@@ -351,7 +320,7 @@ export default {
           name = "UK";
         }
         this.topTenDeathsCountries.push(name);
-        this.topTenDeaths.push(row.deaths);
+        this.topTenDeaths.push(row.deaths_weekly);
       });
     },
     initDefaultStartEndDates() {
@@ -379,10 +348,10 @@ export default {
               .reverse()
               .join("-");
             if (day == formattedDate) {
-              formattedDataObj.deaths = row.deaths;
-              formattedDataObj.cases = row.cases;
-              totalDeaths += parseInt(row.deaths, 10);
-              totalCases += parseInt(row.cases, 10);
+              formattedDataObj.deaths = row.deaths_weekly;
+              formattedDataObj.cases = row.cases_weekly;
+              totalDeaths += parseInt(row.deaths_weekly, 10);
+              totalCases += parseInt(row.cases_weekly, 10);
               formattedDataObj.cumulativeDeaths = totalDeaths;
               formattedDataObj.cumulativeCases = totalCases;
             }

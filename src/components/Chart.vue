@@ -48,6 +48,7 @@ export default {
               label: this.chartLabel,
               data: this.chartData,
               backgroundColor: this.backgroundColor,
+              fill: this.backgroundColor,
               borderColor: this.borderColor,
               borderWidth: 1
             }
