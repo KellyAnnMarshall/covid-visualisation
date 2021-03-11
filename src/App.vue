@@ -102,17 +102,11 @@ export default {
     return {
       allCountries: [],
       covidData: [],
-      pivotData: "",
       formattedCountryData: [],
-      calendarDates: ["2019-12-31"],
-      selectedCountry: "",
+      calendarDates: [],
+      selectedCountry: "United States",
       selectedStartDate: "",
       selectedEndDate: "",
-      topTenCasesCountries: [],
-      topTenCases: [],
-      globalStatsLabel: "",
-      topTenDeathsCountries: [],
-      topTenDeaths: [],
       initChart: false
     };
   },
@@ -128,7 +122,7 @@ export default {
       if (this.selectedCountryData !== undefined) {
         let population = this.selectedCountryData[
           this.selectedCountryData.length - 1
-        ].popData2019;
+        ].population;
         let formattedPopulation = new Number(population).toLocaleString(
           "en-US"
         );
@@ -140,30 +134,10 @@ export default {
       if (this.filteredCountryData !== undefined) {
         let dateLabels = [];
         this.filteredCountryData.map(row => {
-          var day = moment(row.day);
+          var day = moment(row.formattedRowDate);
           dateLabels.push(day.format("MMM DD"));
         });
         return dateLabels;
-      }
-      return null;
-    },
-    cumulativeDeaths() {
-      if (this.filteredCountryData !== undefined) {
-        let cumulativeDeaths = [];
-        this.filteredCountryData.map(row => {
-          cumulativeDeaths.push(row.cumulativeDeaths);
-        });
-        return cumulativeDeaths;
-      }
-      return null;
-    },
-    deaths() {
-      if (this.filteredCountryData !== undefined) {
-        let deaths = [];
-        this.filteredCountryData.map(row => {
-          deaths.push(row.deaths);
-        });
-        return deaths;
       }
       return null;
     },
@@ -187,11 +161,31 @@ export default {
       }
       return null;
     },
+    cumulativeDeaths() {
+      if (this.filteredCountryData !== undefined) {
+        let cumulativeDeaths = [];
+        this.filteredCountryData.map(row => {
+          cumulativeDeaths.push(row.cumulativeDeaths);
+        });
+        return cumulativeDeaths;
+      }
+      return null;
+    },
+    deaths() {
+      if (this.filteredCountryData !== undefined) {
+        let deaths = [];
+        this.filteredCountryData.map(row => {
+          deaths.push(row.deaths);
+        });
+        return deaths;
+      }
+      return null;
+    },
     selectedCountryData() {
       let selectedCountryData = [];
       if (this.selectedCountry !== "") {
-        selectedCountryData = this.covidData.records.filter(row => {
-          return row.countryName.includes(this.selectedCountry);
+        selectedCountryData = this.covidData.filter(row => {
+          return row.country.includes(this.selectedCountry);
         });
       }
       return selectedCountryData;
@@ -199,7 +193,7 @@ export default {
     filteredCountryData() {
       return this.formattedCountryData.filter(row => {
         return (
-          row.day >= this.selectedStartDate && row.day <= this.selectedEndDate
+          row.formattedRowDate >= this.selectedStartDate && row.formattedRowDate <= this.selectedEndDate
         );
       });
     }
@@ -216,13 +210,19 @@ export default {
         this.setFormattedData();
       }
     },
-    cumulativeDeaths: {
+    cumulativeCases: {
       deep: true,
       handler() {
         this.setChart();
       }
     },
-    cumulativeCases: {
+    cases: {
+      deep: true,
+      handler() {
+        this.setChart();
+      }
+    },
+    cumulativeDeaths: {
       deep: true,
       handler() {
         this.setChart();
@@ -234,12 +234,6 @@ export default {
         this.setChart();
       }
     },
-    cases: {
-      deep: true,
-      handler() {
-        this.setChart();
-      }
-    }
   },
   methods: {
     setChart() {
@@ -248,21 +242,28 @@ export default {
         this.initChart = true;
       });
     },
+    formatYearWeekFromDate(date) {
+      let year = moment(date).year();
+      let week = moment(date).isoWeek();
+      if (week < 10) {
+        week = '0' + week;
+      }
+      return `${year}-${week}`;
+    },
     getCalendarDates() {
-      let startDate = moment("2019-12-31");
-      let yesterday = moment().subtract(2, "days");
-      while (startDate.isBefore(yesterday)) {
-        startDate = startDate.add(1, "days");
-        var startDateFormatted = startDate.format("YYYY-MM-DD");
-        this.calendarDates.push(startDateFormatted);
+      let startWeek = moment("2020-01-01");
+      let today = moment().format("YYYY-MM-DD");
+      while (startWeek.isBefore(today)) {
+        startWeek = startWeek.add(1, "week");
+        var startWeekFormatted = startWeek.format("YYYY-MM-DD");
+        this.calendarDates.push(startWeekFormatted);
       }
       this.initDefaultStartEndDates();
     },
     getCountries() {
-      this.covidData.records.map(record => {
-        record.countryName = record.countriesAndTerritories.replace(/_/g, " ");
-        if (this.allCountries.indexOf(record.countryName) === -1) {
-          this.allCountries.push(record.countryName);
+      this.covidData.map(record => {
+        if (this.allCountries.indexOf(record.country) === -1) {
+          this.allCountries.push(record.country);
         }
       });
     },
@@ -274,54 +275,6 @@ export default {
           this.covidData = response.data;
         })
         .then(this.getCountries)
-        .then(this.getTopTwentyCases)
-        .then(this.getTopTwentyDeaths);
-    },
-    getTopTwentyCases() {
-      let yesterday = moment().subtract(1, "days");
-      let yesterdayFormatted = yesterday.format("DD/MM/YYYY");
-      let topTenCaseData = this.covidData.records
-        .filter(record => {
-          return record.dateRep == yesterdayFormatted;
-        })
-        .sort((a, b) => {
-          return b.cases - a.cases;
-        })
-        .slice(0, 10);
-      topTenCaseData.map(row => {
-        let name = row.countriesAndTerritories.replace(/_/g, " ");
-        if (name == "United States of America") {
-          name = "USA";
-        }
-        if (name == "United Kingdom") {
-          name = "UK";
-        }
-        this.topTenCasesCountries.push(name);
-        this.topTenCases.push(row.cases_weekly);
-      });
-    },
-    getTopTwentyDeaths() {
-      let yesterday = moment().subtract(1, "days");
-      let yesterdayFormatted = yesterday.format("DD/MM/YYYY");
-      let topTenDeathsData = this.covidData.records
-        .filter(record => {
-          return record.dateRep == yesterdayFormatted;
-        })
-        .sort((a, b) => {
-          return b.deaths_weekly - a.deaths_weekly;
-        })
-        .slice(0, 10);
-      topTenDeathsData.map(row => {
-        let name = row.countriesAndTerritories.replace(/_/g, " ");
-        if (name == "United States of America") {
-          name = "USA";
-        }
-        if (name == "United Kingdom") {
-          name = "UK";
-        }
-        this.topTenDeathsCountries.push(name);
-        this.topTenDeaths.push(row.deaths_weekly);
-      });
     },
     initDefaultStartEndDates() {
       this.selectedStartDate = this.calendarDates[0];
@@ -333,27 +286,19 @@ export default {
         this.calendarDates !== undefined &&
         this.selectedCountryData !== undefined
       ) {
-        let totalDeaths = 0;
-        let totalCases = 0;
         this.calendarDates.map(day => {
           let formattedDataObj = {};
-          formattedDataObj.day = day;
-          formattedDataObj.deaths = 0;
-          formattedDataObj.cases = 0;
-          formattedDataObj.cumulativeDeaths = totalDeaths;
-          formattedDataObj.cumulativeCases = totalCases;
+          let year_week = this.formatYearWeekFromDate(day);
           this.selectedCountryData.map(row => {
-            var formattedDate = row.dateRep
-              .split("/")
-              .reverse()
-              .join("-");
-            if (day == formattedDate) {
-              formattedDataObj.deaths = row.deaths_weekly;
-              formattedDataObj.cases = row.cases_weekly;
-              totalDeaths += parseInt(row.deaths_weekly, 10);
-              totalCases += parseInt(row.cases_weekly, 10);
-              formattedDataObj.cumulativeDeaths = totalDeaths;
-              formattedDataObj.cumulativeCases = totalCases;
+            formattedDataObj.formattedRowDate = day;
+            if (year_week == row.year_week) {
+              if (row.indicator === "cases") {
+                formattedDataObj.cases = row.weekly_count;
+                formattedDataObj.cumulativeCases = row.cumulative_count;
+              } else if (row.indicator === "deaths") {
+                formattedDataObj.deaths = row.weekly_count;
+                formattedDataObj.cumulativeDeaths = row.cumulative_count;
+              }
             }
           });
           this.formattedCountryData.push(formattedDataObj);
@@ -369,16 +314,10 @@ export default {
     setSelectedStartDate(date) {
       this.selectedStartDate = date;
     },
-    setGlobalStatsLabel() {
-      let yesterday = moment().subtract(1, "days");
-      this.globalStatsLabel =
-        yesterday.format("DD MMM YYYY") + " - Top 10";
-    }
   },
   mounted() {
     this.getCalendarDates();
     this.getData();
-    this.setGlobalStatsLabel();
   },
   destroyed() {}
 };
