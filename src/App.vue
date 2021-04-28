@@ -104,7 +104,7 @@ export default {
       covidData: [],
       formattedCountryData: [],
       calendarDates: [],
-      selectedCountry: "United States",
+      selectedCountry: "India",
       selectedStartDate: "",
       selectedEndDate: "",
       initChart: false
@@ -193,7 +193,8 @@ export default {
     filteredCountryData() {
       return this.formattedCountryData.filter(row => {
         return (
-          row.formattedRowDate >= this.selectedStartDate && row.formattedRowDate <= this.selectedEndDate
+          row.formattedRowDate >= this.selectedStartDate &&
+          row.formattedRowDate <= this.selectedEndDate
         );
       });
     }
@@ -233,7 +234,7 @@ export default {
       handler() {
         this.setChart();
       }
-    },
+    }
   },
   methods: {
     setChart() {
@@ -246,7 +247,7 @@ export default {
       let year = moment(date).year();
       let week = moment(date).isoWeek();
       if (week < 10) {
-        week = '0' + week;
+        week = "0" + week;
       }
       return `${year}-${week}`;
     },
@@ -274,7 +275,7 @@ export default {
         .then(response => {
           this.covidData = response.data;
         })
-        .then(this.getCountries)
+        .then(this.getCountries);
     },
     initDefaultStartEndDates() {
       this.selectedStartDate = this.calendarDates[0];
@@ -313,7 +314,7 @@ export default {
     },
     setSelectedStartDate(date) {
       this.selectedStartDate = date;
-    },
+    }
   },
   mounted() {
     this.getCalendarDates();
