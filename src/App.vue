@@ -104,7 +104,7 @@ export default {
       covidData: [],
       formattedCountryData: [],
       calendarDates: [],
-      selectedCountry: "India",
+      selectedCountry: "United Kingdom",
       selectedStartDate: "",
       selectedEndDate: "",
       initChart: false
