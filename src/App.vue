@@ -290,9 +290,9 @@ export default {
         this.calendarDates.map(day => {
           let formattedDataObj = {};
           let year_week = this.formatYearWeekFromDate(day);
-          this.selectedCountryData.map(row => {
+          let matchedData = this.selectedCountryData.filter(record => record.year_week === year_week);
+          matchedData.map(row => {
             formattedDataObj.formattedRowDate = day;
-            if (year_week == row.year_week) {
               if (row.indicator === "cases") {
                 formattedDataObj.cases = row.weekly_count;
                 formattedDataObj.cumulativeCases = row.cumulative_count;
@@ -300,7 +300,6 @@ export default {
                 formattedDataObj.deaths = row.weekly_count;
                 formattedDataObj.cumulativeDeaths = row.cumulative_count;
               }
-            }
           });
           this.formattedCountryData.push(formattedDataObj);
         });
