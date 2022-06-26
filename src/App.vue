@@ -96,7 +96,7 @@ export default {
   name: "app",
   components: {
     Chart,
-    Datepicker
+    Datepicker,
   },
   data() {
     return {
@@ -104,18 +104,18 @@ export default {
       covidData: [],
       formattedCountryData: [],
       calendarDates: [],
-      selectedCountry: "United Kingdom",
+      selectedCountry: "Austria",
       selectedStartDate: "",
       selectedEndDate: "",
-      initChart: false
+      initChart: false,
     };
   },
   props: {
     isAsync: {
       type: Boolean,
       required: false,
-      default: false
-    }
+      default: false,
+    },
   },
   computed: {
     population() {
@@ -133,7 +133,7 @@ export default {
     dateLabels() {
       if (this.filteredCountryData !== undefined) {
         let dateLabels = [];
-        this.filteredCountryData.map(row => {
+        this.filteredCountryData.map((row) => {
           var day = moment(row.formattedRowDate);
           dateLabels.push(day.format("MMM DD"));
         });
@@ -144,7 +144,7 @@ export default {
     cumulativeCases() {
       if (this.filteredCountryData !== undefined) {
         let cumulativeCases = [];
-        this.filteredCountryData.map(row => {
+        this.filteredCountryData.map((row) => {
           cumulativeCases.push(row.cumulativeCases);
         });
         return cumulativeCases;
@@ -154,7 +154,7 @@ export default {
     cases() {
       if (this.filteredCountryData !== undefined) {
         let cases = [];
-        this.filteredCountryData.map(row => {
+        this.filteredCountryData.map((row) => {
           cases.push(row.cases);
         });
         return cases;
@@ -164,7 +164,7 @@ export default {
     cumulativeDeaths() {
       if (this.filteredCountryData !== undefined) {
         let cumulativeDeaths = [];
-        this.filteredCountryData.map(row => {
+        this.filteredCountryData.map((row) => {
           cumulativeDeaths.push(row.cumulativeDeaths);
         });
         return cumulativeDeaths;
@@ -174,7 +174,7 @@ export default {
     deaths() {
       if (this.filteredCountryData !== undefined) {
         let deaths = [];
-        this.filteredCountryData.map(row => {
+        this.filteredCountryData.map((row) => {
           deaths.push(row.deaths);
         });
         return deaths;
@@ -184,57 +184,57 @@ export default {
     selectedCountryData() {
       let selectedCountryData = [];
       if (this.selectedCountry !== "") {
-        selectedCountryData = this.covidData.filter(row => {
+        selectedCountryData = this.covidData.filter((row) => {
           return row.country.includes(this.selectedCountry);
         });
       }
       return selectedCountryData;
     },
     filteredCountryData() {
-      return this.formattedCountryData.filter(row => {
+      return this.formattedCountryData.filter((row) => {
         return (
           row.formattedRowDate >= this.selectedStartDate &&
           row.formattedRowDate <= this.selectedEndDate
         );
       });
-    }
+    },
   },
   watch: {
     selectedCountry: {
       handler() {
         this.setChart();
-      }
+      },
     },
     selectedCountryData: {
       deep: true,
       handler() {
         this.setFormattedData();
-      }
+      },
     },
     cumulativeCases: {
       deep: true,
       handler() {
         this.setChart();
-      }
+      },
     },
     cases: {
       deep: true,
       handler() {
         this.setChart();
-      }
+      },
     },
     cumulativeDeaths: {
       deep: true,
       handler() {
         this.setChart();
-      }
+      },
     },
     deaths: {
       deep: true,
       handler() {
         this.setChart();
-      }
-    }
+      },
+    },
   },
   methods: {
     setChart() {
@@ -262,7 +262,7 @@ export default {
       this.initDefaultStartEndDates();
     },
     getCountries() {
-      this.covidData.map(record => {
+      this.covidData.map((record) => {
         if (this.allCountries.indexOf(record.country) === -1) {
           this.allCountries.push(record.country);
         }
@@ -272,7 +272,7 @@ export default {
       let url = "download.json";
       return axios
         .get(url)
-        .then(response => {
+        .then((response) => {
           this.covidData = response.data;
         })
         .then(this.getCountries);
@@ -287,19 +287,21 @@ export default {
         this.calendarDates !== undefined &&
         this.selectedCountryData !== undefined
       ) {
-        this.calendarDates.map(day => {
+        this.calendarDates.map((day) => {
           let formattedDataObj = {};
           let year_week = this.formatYearWeekFromDate(day);
-          let matchedData = this.selectedCountryData.filter(record => record.year_week === year_week);
-          matchedData.map(row => {
+          let matchedData = this.selectedCountryData.filter(
+            (record) => record.year_week === year_week
+          );
+          matchedData.map((row) => {
             formattedDataObj.formattedRowDate = day;
-              if (row.indicator === "cases") {
-                formattedDataObj.cases = row.weekly_count;
-                formattedDataObj.cumulativeCases = row.cumulative_count;
-              } else if (row.indicator === "deaths") {
-                formattedDataObj.deaths = row.weekly_count;
-                formattedDataObj.cumulativeDeaths = row.cumulative_count;
-              }
+            if (row.indicator === "cases") {
+              formattedDataObj.cases = row.weekly_count;
+              formattedDataObj.cumulativeCases = row.cumulative_count;
+            } else if (row.indicator === "deaths") {
+              formattedDataObj.deaths = row.weekly_count;
+              formattedDataObj.cumulativeDeaths = row.cumulative_count;
+            }
           });
           this.formattedCountryData.push(formattedDataObj);
         });
@@ -313,12 +315,12 @@ export default {
     },
     setSelectedStartDate(date) {
       this.selectedStartDate = date;
-    }
+    },
   },
   mounted() {
     this.getCalendarDates();
     this.getData();
   },
-  destroyed() {}
+  destroyed() {},
 };
 </script>
