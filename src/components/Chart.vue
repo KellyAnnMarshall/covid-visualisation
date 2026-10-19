@@ -17,21 +17,21 @@ export default {
     "borderColor",
     "backgroundColor",
     "chartType",
-    "aspectRatio"
+    "aspectRatio",
   ],
   watch: {
     chartData: {
       deep: true,
       handler() {
         this.buildLineGraph();
-      }
+      },
     },
     chartAxisLabels: {
       deep: true,
       handler() {
         this.buildLineGraph();
-      }
-    }
+      },
+    },
   },
   methods: {
     buildLineGraph() {
@@ -50,54 +50,54 @@ export default {
               backgroundColor: this.backgroundColor,
               fill: this.backgroundColor,
               borderColor: this.borderColor,
-              borderWidth: 1
-            }
-          ]
+              borderWidth: 1,
+            },
+          ],
         },
         options: {
           responsive: true,
           aspectRatio: this.aspectRatio,
           tooltips: {
             callbacks: {
-              label: tooltipItem => {
+              label: (tooltipItem) => {
                 let formattedValue = new Number(
-                  tooltipItem.yLabel
+                  tooltipItem.yLabel,
                 ).toLocaleString("en-US");
                 return formattedValue;
-              }
+              },
             },
             displayColors: false,
             xPadding: 10,
-            yPadding: 10
+            yPadding: 10,
           },
           scales: {
             yAxes: [
               {
                 ticks: {
                   beginAtZero: true,
-                  callback: value => {
+                  callback: (value) => {
                     let formattedValue = new Number(value).toLocaleString(
-                      "en-US"
+                      "en-US",
                     );
                     return formattedValue;
-                  }
-                }
-              }
+                  },
+                },
+              },
             ],
             xAxes: [
               {
                 ticks: {
-                  padding: 10
-                }
-              }
-            ]
-          }
-        }
+                  padding: 10,
+                },
+              },
+            ],
+          },
+        },
       });
-    }
+    },
   },
   mounted() {
     this.buildLineGraph();
-  }
+  },
 };
 </script>

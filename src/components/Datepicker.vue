@@ -1,11 +1,14 @@
 <template>
-  <div class="form-group position-relative" v-if="dateRange">
+  <div
+    class="form-group position-relative"
+    v-if="dateRange && dateRange.length"
+  >
     <label :for="inputId">{{ inputLabel }}:</label>
     <input
       ref="datepicker"
       class="form-control"
       type="date"
-      v-model="date"
+      :value="selectedDate"
       @blur="setSelectedDate"
       @input="setSelectedDate"
       @change="setSelectedDate"
@@ -13,7 +16,8 @@
       :id="inputId"
       autocomplete="off"
       :min="minDate"
-      :max="maxDate"
+      :max="resolvedMaxDate"
+      :disabled="!dateRange.length || !selectedDate"
     />
   </div>
 </template>
@@ -21,36 +25,57 @@
 <script>
 export default {
   name: "Datepicker",
-  data() {
-    return {
-      date: this.selectedDate
-    };
+  props: {
+    dateRange: {
+      type: Array,
+      required: true,
+      default: () => [],
+    },
+    selectedDate: {
+      type: String,
+      default: "",
+    },
+    inputLabel: {
+      type: String,
+      default: "Date",
+    },
+    inputId: {
+      type: String,
+      default: "date-input",
+    },
+    maxDate: {
+      type: String,
+      default: "",
+    },
   },
-  props: ["dateRange", "selectedDate", "inputLabel", "inputId"],
   computed: {
     minDate() {
-      return this.dateRange[0];
+      return this.dateRange[0] || "";
     },
-    maxDate() {
-      return this.dateRange[this.dateRange.length - 1];
-    }
-  },
-  watch: {
-    selectedDate: {
-      handler(val, oldValue) {
-        if (val.length !== oldValue.length) {
-          this.date = this.selectedDate;
-        }
+    resolvedMaxDate() {
+      if (this.maxDate) {
+        return this.maxDate;
       }
-    }
+      return this.dateRange[this.dateRange.length - 1] || "";
+    },
   },
   methods: {
-    setSelectedDate() {
-      this.$emit("setSelectedDate", this.date);
-    }
-  }
+    setSelectedDate(event) {
+      const value = event.target.value;
+      if (!value) {
+        this.$emit("setSelectedDate", "");
+        return;
+      }
+
+      if (this.resolvedMaxDate && value > this.resolvedMaxDate) {
+        this.$emit("setSelectedDate", this.resolvedMaxDate);
+        return;
+      }
+
+      this.$emit("setSelectedDate", value);
+    },
+  },
 };
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="scss"></style>
